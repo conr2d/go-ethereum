@@ -130,6 +130,10 @@ type (
 	touchChange struct {
 		account *common.Address
 	}
+	extraChange struct {
+		account *common.Address
+		prev []byte
+	}
 )
 
 func (ch createObjectChange) revert(s *StateDB) {
@@ -233,4 +237,12 @@ func (ch addPreimageChange) revert(s *StateDB) {
 
 func (ch addPreimageChange) dirtied() *common.Address {
 	return nil
+}
+
+func (ch extraChange) revert(s *StateDB) {
+	s.getStateObject(*ch.account).setExtra(ch.prev)
+}
+
+func (ch extraChange) dirtied() *common.Address {
+	return ch.account
 }

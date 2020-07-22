@@ -874,3 +874,19 @@ func (s *StateDB) Commit(deleteEmptyObjects bool) (common.Hash, error) {
 	}
 	return root, err
 }
+
+func (s *StateDB) GetExtra(addr common.Address) []byte {
+	stateObject := s.getStateObject(addr)
+	if stateObject != nil {
+		return stateObject.Extra()
+	}
+
+	return nil
+}
+
+func (s *StateDB) SetExtra(addr common.Address, extra []byte) {
+	stateObject := s.GetOrNewStateObject(addr)
+	if stateObject != nil {
+		stateObject.SetExtra(extra)
+	}
+}

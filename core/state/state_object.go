@@ -30,6 +30,7 @@ import (
 )
 
 var emptyCodeHash = crypto.Keccak256(nil)
+var emptyExtra = common.FromHex("0000000000000000000000000000000000000000000000000000000000000000")
 
 type Code []byte
 
@@ -104,6 +105,7 @@ type Account struct {
 	Balance  *big.Int
 	Root     common.Hash // merkle root of the storage trie
 	CodeHash []byte
+	Extra    []byte
 }
 
 // newObject creates a state object.
@@ -113,6 +115,9 @@ func newObject(db *StateDB, address common.Address, data Account) *stateObject {
 	}
 	if data.CodeHash == nil {
 		data.CodeHash = emptyCodeHash
+	}
+	if data.Extra == nil {
+		data.Extra = emptyExtra
 	}
 	if data.Root == (common.Hash{}) {
 		data.Root = emptyRoot
@@ -509,6 +514,22 @@ func (s *stateObject) Balance() *big.Int {
 
 func (s *stateObject) Nonce() uint64 {
 	return s.data.Nonce
+}
+
+func (s *stateObject) setExtra(extra []byte) {
+	s.data.Extra = extra
+}
+
+func (s *stateObject) SetExtra(extra []byte) {
+	s.db.journal.append(extraChange{
+		account: &s.address,
+		prev: s.Extra(),
+	})
+	s.setExtra(extra)
+}
+
+func (s *stateObject) Extra() []byte {
+	return s.data.Extra
 }
 
 // Never called, but must be present to allow stateObject to be used
